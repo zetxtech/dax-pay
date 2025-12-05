@@ -6,9 +6,9 @@ spring:
         master:
           # Postgresql连接
           driver-class-name: org.postgresql.Driver
-          url: jdbc:postgresql://127.0.0.1:5432/dax-pay-plus?serverTimezone=Asia/Shanghai&autoReconnect=true&reWriteBatchedInserts=true
-          username: postgresql
-          password: postgresql
+          url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME:dax-pay}?serverTimezone=Asia/Shanghai&autoReconnect=true&reWriteBatchedInserts=true
+          username: ${DB_USER:postgresql}
+          password: ${DB_PASSWORD:postgresql}
       hikari:
         minimumIdle: 5 # 最小连接数
         maximumPoolSize: 50 # 最大连接数
@@ -18,10 +18,10 @@ spring:
         max-lifetime: 1800000     # 连接最大存活时间（毫秒）
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
-      database: 13
-      password: bootx123
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:13}
+      password: ${REDIS_PASSWORD:bootx123}
       lettuce:
         pool:
           max-wait: 1000ms
@@ -35,15 +35,21 @@ knife4j:
   # 是否开启Knife4j增强模式
   enable: true
   # 是否生产环境
-  production: true
+  production: ${KNIFE4J_PRODUCTION:true}
 # 基础脚手架配置
 bootx-platform:
+  common:
+    spring:
+      cors:
+        enable: true
+        # 允许跨域的源，多个用逗号分隔，如: https://pay.zetx.tech,https://ipay.zetx.tech
+        allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:*}
   starter:
     auth:
       # 开启超级管理员
-      enable-admin: false
+      enable-admin: ${DAXPAY_ENABLE_ADMIN:false}
       # 用户管理列表中是否显示超级管理员用户
-      admin-in-list: false
+      admin-in-list: ${DAXPAY_ADMIN_IN_LIST:false}
       ignore-urls:
         - '/actuator/**'
         - '/token/**'
@@ -54,9 +60,20 @@ bootx-platform:
 # 支付系统配置
 dax-pay:
   # 环境标识
-  env: DAX
+  env: ${DAX_PAY_ENV:DAX}
   # 通常为两位内 机器码, 用于区分不同机器生成的流水号
-  machine-no: 70
+  machine-no: ${DAX_PAY_MACHINE_NO:70}
+  # 启动证书认证配置
+  license-key:
+    clazz: org.dromara.daxpay.monitor.util.EncryptUtil
+    password-method: generateFixedPwd
+    public-key-method: getPublicKey
+  # 证书配置
+  key-config:
+    # 私钥配置 (生产环境建议通过环境变量注入)
+    private-key: ${DAX_PAY_PRIVATE_KEY:}
+    # 公钥配置
+    public-key: ${DAX_PAY_PUBLIC_KEY:}
 dromara:
   # 注意, 不要设置 domain 访问路径, 自行进行拼接访问路径, 来保证可迁移性
   x-file-storage:
@@ -65,10 +82,10 @@ dromara:
     amazon-s3:
       - platform: amazon-s3 # 存储平台标识
         enable-storage: true  # 启用存储
-        access-key: test
-        secret-key: test
-        end-point: https://files.daxpay.com # 文件存储服务地址
-        bucket-name: daxpay # 桶名称，不要添加/后缀,
+        access-key: ${OSS_ACCESS_KEY:test}
+        secret-key: ${OSS_SECRET_KEY:test}
+        end-point: ${OSS_ENDPOINT:https://files.daxpay.com} # 文件存储服务地址
+        bucket-name: ${OSS_BUCKET:daxpay} # 桶名称，不要添加/后缀,
         base-path: file/ # 基础路径, 不要添加/前缀, 但需要添加/后缀
         attr:
           # 开启路径样式访问, 不配置默认为二级域名方式

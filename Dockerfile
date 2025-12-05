@@ -8,22 +8,17 @@ MAINTAINER daxpay@daxpay.cn
 ENV TZ=Asia/Shanghai
 RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 启动命令
-ENV JAVA_COMM="-Djava.security.egd=file:/dev/./urandom -Dfile.encoding=UTF-8"
-# 启动选项配置
-ENV JAVA_OPTS=""
-# Agent配置
-ENV JAVA_AGENT=""
-# 参数配置
-ENV JAVA_ARGS=""
+# 生产环境
+ENV SPRING_PROFILES_ACTIVE=prod
+
 # 工作目录
 WORKDIR /
 
 # 端口暴露
 EXPOSE 9999
 
-# 添加执行jar包
-ADD daxpay-open-server/target/daxpay-open-server.jar daxpay-server.jar
+# 添加执行 jar 包
+ADD daxpay-open-client/target/daxpay-open-server.jar daxpay-server.jar
 
 # 执行启动命令
-CMD java $JAVA_OPTS -jar daxpay-server.jar
+CMD java -Djava.security.egd=file:/dev/./urandom -Dfile.encoding=UTF-8 -jar daxpay-server.jar
